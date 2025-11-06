@@ -1,0 +1,22 @@
+name: Weekly Copilot IP Refresh
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # Every Monday 03:00 UTC
+  workflow_dispatch:     # Also allow manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refresh from Palo Alto
+        run: |
+          curl -s https://edl.paloaltonetworks.com/feeds/microsoft-copilot.txt -o edl.txt
+      - name: Commit if changed
+        run: |
+          git config user.name "Copilot Killer Bot"
+          git config user.email "bot@yourcompany.com"
+          git add edl.txt
+          git diff --quiet && echo "No changes" && exit 0
+          git commit -m "Auto-update Copilot IPs $(date +%F)"
+          git push
